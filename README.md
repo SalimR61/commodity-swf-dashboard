@@ -1,6 +1,6 @@
 # Commodity Compass
 
-A dashboard that pairs live commodity news with real price movement and the sovereign wealth fund tied to the country each story relates to — built to explore how commodity markets and geopolitics intersect.
+An interactive dashboard pairing live commodity news with real price movement, an annotated price history chart, AI-generated market analysis, and the sovereign wealth fund tied to the country each story relates to — built to explore how commodity markets and geopolitics intersect.
 
 **Live demo:** *(link coming soon)*
 
@@ -13,6 +13,8 @@ For a chosen commodity (oil, gas, copper, or gold), the dashboard:
 - Shows the current price and % change over five time windows (1d, 3d, 1w, 1mo, 12mo), via Yahoo Finance
 - Matches each article to the country it's about, and looks up the relevant sovereign wealth fund
 - Generates a short, data-grounded commentary on each article using Claude (Anthropic's AI model) — grounded specifically in the real price numbers already calculated, not left to invent figures
+- Displays an interactive price chart with hover-based annotations linking headlines to the exact price point they relate to, plus a milestone reference line for commodities with a well-known psychological price level
+- Generates a longer market overview per commodity, alongside the per-article commentary, summarizing recent price action and explaining its geopolitical sensitivity rating
 
 ## How it works
 
@@ -35,6 +37,15 @@ Built and documented honestly rather than glossed over:
 - **Single fund per country**: some countries (e.g. UAE) run multiple sovereign wealth funds; this project matches to one representative fund per country as a deliberate simplification.
 - **Single news source**: uses The Guardian specifically, chosen for its production-safe free tier; a fuller version would aggregate across multiple outlets.
 - **Headline-based matching**: country matching is based on text mentions in the headline (falling back to the article summary) — a reasonably reliable heuristic, but not full NLP-based entity recognition.
+
+## Future improvements
+
+Deliberately scoped out of this version, noted honestly rather than left unaddressed:
+
+- **Multi-currency support**: prices are currently USD-only; a fuller version would let users switch currency via a live forex API.
+- **Full Brent Crude tracking**: oil currently shows Brent as a simple reference price alongside WTI; a fuller version would give Brent its own complete price-window and chart view, toggleable against WTI.
+- **Multi-source news aggregation**: currently uses The Guardian only, chosen for its production-safe free tier; a fuller version would aggregate across several outlets.
+- **R/Stata quantitative layer**: exporting the underlying price history for a proper time-series analysis (e.g. volatility clustering, return distributions) in R, tying the project to my econometrics coursework directly.
 
 ## Tech stack
 

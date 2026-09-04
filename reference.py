@@ -2,28 +2,50 @@
 # Holds our commodity and sovereign wealth fund reference data
 
 # Each commodity maps to its Yahoo Finance ticker (used to fetch live
-# prices), a human-readable name (used in the dashboard UI), and search
-# terms used to find relevant news articles via the Guardian API
+# prices), a human-readable name (used in the dashboard UI), search
+# terms used to find relevant news articles via the Guardian API, an
+# optional "milestone" - a well-known round-number price level (e.g.
+# $100 oil, $5,000 gold), and a geopolitical_sensitivity label.
+#
+# milestone is None where no equally famous threshold genuinely exists,
+# rather than inventing an arbitrary number.
+#
+# geopolitical_sensitivity is a simple, manually-assigned label reflecting
+# how directly each commodity's price tends to react to geopolitical events
+# (sanctions, conflict, export controls) based on observed market behaviour -
+# not a modeled or quantitative score.
 COMMODITIES = {
     "oil": {
         "ticker": "CL=F",
         "display_name": "Crude Oil (WTI)",
         "search_terms": ["oil price", "crude oil", "oil market", "OPEC"],
+        "milestone": 100,
+        "geopolitical_sensitivity": "High",
+        "secondary_market": {"ticker": "BZ=F", "name": "Brent Crude"},
     },
     "gas": {
         "ticker": "NG=F",
         "display_name": "Natural Gas",
         "search_terms": ["natural gas price", "gas market", "LNG"],
+        "milestone": None,
+        "geopolitical_sensitivity": "High",
+        "secondary_market": None
     },
     "copper": {
         "ticker": "HG=F",
         "display_name": "Copper",
         "search_terms": ["copper price", "copper market", "copper mine"],
+        "milestone": None,
+        "geopolitical_sensitivity": "Moderate",
+        "secondary_market": None,
     },
     "gold": {
         "ticker": "GC=F",
         "display_name": "Gold",
         "search_terms": ["gold price", "gold market", "gold reserves"],
+        "milestone": 5000,
+        "geopolitical_sensitivity": "Moderate",
+        "secondary_market": None,
     },
 }
 

@@ -40,6 +40,38 @@ Write one sentence connecting the headline to the price data. Be specific and gr
             return block.text
     return ""
 
+
+@st.cache_data(ttl=1800)
+def generate_market_overview(commodity_key, display_name, windows, sensitivity, milestone, current_price):
+    price_summary = ", ".join(
+        f"{label}: {pct}%" for label, pct in windows.items() if pct is not None
+    )
+
+    milestone_line = ""
+    if milestone is not None:
+        distance = current_price - milestone
+        milestone_line = f"Current price is {'above' if distance > 0 else 'below'} the ${milestone:,} milestone by ${abs(distance):.2f}."
+
+    prompt = f"""You are writing a short market overview (120-150 words) for a commodities dashboard, aimed at someone with a finance/economics background.
+
+Commodity: {display_name}
+Current price: ${current_price:.2f}
+Price changes: {price_summary}
+Geopolitical sensitivity: {sensitivity}
+{milestone_line}
+
+Write a brief, grounded overview of the current state of this market: what the recent price action suggests, and why this commodity's geopolitical sensitivity rating is what it is (in general terms, not tied to a specific unverified event). Be specific and reference the actual numbers given. Do not invent specific events, deals, or statistics not provided above - if you don't have enough information to explain a move, say so rather than fabricating a cause. Write in a neutral, analytical tone, as if for a research note. Do not include a title, heading, or the word "overview" at the start - begin directly with the first sentence of analysis."""
+    response = client.messages.create(
+        model="claude-sonnet-5",
+        max_tokens=400,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    for block in response.content:
+        if block.type == "text":
+            return block.text
+    return ""
+
 if __name__ == "__main__":
     from news import get_articles_for_commodity
     from prices import get_price_windows

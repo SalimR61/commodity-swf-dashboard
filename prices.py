@@ -16,6 +16,11 @@ def get_current_price(commodity_key):
     latest_price = data["Close"].iloc[-1]
     return latest_price
 
+@st.cache_data(ttl=300)
+def get_secondary_market_price(ticker_symbol):
+    ticker = yf.Ticker(ticker_symbol)
+    data = ticker.history(period="1d")
+    return data["Close"].iloc[-1]
 # Compares the latest price to the price roughly N days ago for each
 # window. Uses "on or before target date" rather than an exact date match,
 # since markets are closed weekends/holidays so an exact date rarely exists
@@ -65,6 +70,13 @@ def get_price_windows(commodity_key):
         results[label] = round(pct_change, 2)
 
     return results
+
+@st.cache_data(ttl=300)
+def get_price_history(commodity_key):
+    ticker_symbol = COMMODITIES[commodity_key]["ticker"]
+    ticker = yf.Ticker(ticker_symbol)
+    data = ticker.history(period="13mo")
+    return data[["Close"]]
 
 if __name__ == "__main__":
     for commodity_key in COMMODITIES:

@@ -1,6 +1,9 @@
 # matching.py
-# Matches a news article to a relevant country/fund based on mentions in the text
+# Matches a news article to a relevant country/fund based on mentions in the text,
+# and matches articles to the nearest trading day for chart annotations
 
+import numpy as np
+import pandas as pd
 from reference import COUNTRY_FUNDS
 
 def find_fund_for_article(article, commodity_key):
@@ -25,6 +28,24 @@ def find_fund_for_article(article, commodity_key):
             return entry
 
     return None
+
+def match_articles_to_price_dates(articles, price_history):
+    matches = []
+    for article in articles:
+        article_date = pd.to_datetime(article["webPublicationDate"]).tz_localize(None).normalize()
+        price_dates = price_history.index.tz_localize(None)
+
+        diffs = np.abs((price_dates - article_date).values)
+        closest_idx = diffs.argmin()
+        closest_date = price_history.index[closest_idx]
+        closest_price = price_history["Close"].iloc[closest_idx]
+
+        matches.append({
+            "article": article,
+            "date": closest_date,
+            "price": closest_price,
+        })
+    return matches
 
 if __name__ == "__main__":
     from news import get_articles_for_commodity
