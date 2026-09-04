@@ -2,7 +2,7 @@
 
 An interactive dashboard pairing live commodity news with real price movement, an annotated price history chart, AI-generated market analysis, and the sovereign wealth fund tied to the country each story relates to — built to explore how commodity markets and geopolitics intersect.
 
-**Live demo:** *(link coming soon)*
+**Live demo:** [commodity-swf-dashboard-hts6qcipexvotqkyumo8pk.streamlit.app](https://commodity-swf-dashboard-hts6qcipexvotqkyumo8pk.streamlit.app/)
 
 ![Dashboard screenshot](Screenshot.png)
 
