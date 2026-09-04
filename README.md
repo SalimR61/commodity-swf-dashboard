@@ -4,7 +4,7 @@ A dashboard that pairs live commodity news with real price movement and the sove
 
 **Live demo:** *(link coming soon)*
 
-![Dashboard screenshot](screenshot.png)
+![Dashboard screenshot](Screenshot.png)
 
 ## What it does
 
