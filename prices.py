@@ -1,6 +1,7 @@
 # prices.py
 # Fetches current and historical commodity prices using yfinance
 
+import os
 import yfinance as yf
 import streamlit as st
 from datetime import timedelta
@@ -21,6 +22,7 @@ def get_secondary_market_price(ticker_symbol):
     ticker = yf.Ticker(ticker_symbol)
     data = ticker.history(period="1d")
     return data["Close"].iloc[-1]
+
 # Compares the latest price to the price roughly N days ago for each
 # window. Uses "on or before target date" rather than an exact date match,
 # since markets are closed weekends/holidays so an exact date rarely exists
@@ -77,6 +79,55 @@ def get_price_history(commodity_key):
     ticker = yf.Ticker(ticker_symbol)
     data = ticker.history(period="13mo")
     return data[["Close"]]
+import numpy as np
+
+@st.cache_data(ttl=300)
+def get_rolling_volatility(commodity_key, window=20):
+    """
+    Computes the most recent 20-day annualised rolling volatility from
+    daily log returns - the same methodology used in the offline R
+    analysis (r_analysis/analysis.R), reimplemented here in Python so it
+    can update live with the rest of the dashboard.
+
+    Returns volatility as a percentage (e.g. 26.8), or None if there
+    isn't enough price history yet to compute a full window.
+    """
+    history = get_price_history(commodity_key)
+    closes = history["Close"]
+
+    log_returns = np.log(closes / closes.shift(1))
+    rolling_vol = log_returns.rolling(window=window).std() * np.sqrt(252)
+
+    latest_vol = rolling_vol.iloc[-1]
+    if np.isnan(latest_vol):
+        return None
+
+    return round(latest_vol * 100, 2)
+
+def export_price_history_to_csv(output_dir="r_analysis/data"):
+    """
+    Exports full price history for every commodity in reference.py to individual CSVs.
+    Used as the data source for the R/Stata volatility analysis layer.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    exported = []
+
+    for commodity_key, commodity in COMMODITIES.items():
+        ticker = commodity["ticker"]
+        name = commodity["display_name"]
+
+        df = get_price_history(commodity_key)
+
+        if df is None or df.empty:
+            print(f"Skipped {name}: no data returned")
+            continue
+
+        filename = f"{output_dir}/{ticker.replace('=', '_').replace('.', '_')}.csv"
+        df.to_csv(filename)
+        exported.append(name)
+
+    print(f"Exported {len(exported)} commodities: {', '.join(exported)}")
+    return exported
 
 if __name__ == "__main__":
     for commodity_key in COMMODITIES:
@@ -89,3 +140,5 @@ if __name__ == "__main__":
             print(f"  {label}: {pct}%")
 
     print(f"\nNote: {DATA_CAVEAT}")
+
+    export_price_history_to_csv()

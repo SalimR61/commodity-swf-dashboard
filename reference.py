@@ -47,6 +47,14 @@ COMMODITIES = {
         "geopolitical_sensitivity": "Moderate",
         "secondary_market": None,
     },
+ "aluminium": {
+        "ticker": "ALI=F",
+        "display_name": "Aluminium",
+        "search_terms": ["aluminium price", "aluminum price", "aluminium market", "bauxite", "alumina"],
+        "milestone": None,
+        "geopolitical_sensitivity": "Moderate",
+        "secondary_market": None,
+    },
 }
 
 # One fund per country, chosen as the most prominent/commodity-relevant fund.

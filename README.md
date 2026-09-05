@@ -47,6 +47,69 @@ Deliberately scoped out of this version, noted honestly rather than left unaddre
 - **Multi-source news aggregation**: currently uses The Guardian only, chosen for its production-safe free tier; a fuller version would aggregate across several outlets.
 - **R/Stata quantitative layer**: exporting the underlying price history for a proper time-series analysis (e.g. volatility clustering, return distributions) in R, tying the project to my econometrics coursework directly.
 
+## Quantitative Volatility Layer
+
+To build genuine, evidence-backed R/Stata experience (previously a CV skill with no
+project to point to), the dashboard was extended with a volatility analysis layer,
+split across two parts:
+
+**Live metric (Python)** — `prices.py` computes 20-day annualised rolling volatility
+from daily log returns for the selected commodity, displayed alongside the existing
+price-change windows. This uses the same continuous futures data as the rest of the
+dashboard, so it inherits the same roll-date limitation described above.
+
+**Offline analysis (R)** — a separate script (`r_analysis/analysis.R`) exports price
+history for all five commodities and computes daily log returns, 20-day rolling
+volatility, and descriptive statistics (mean return, annualised volatility, skewness,
+kurtosis) for each. Aluminium was used as a worked case study, including a check for
+volatility clustering via the autocorrelation function (ACF) of squared returns.
+
+*Why offline rather than live: Streamlit Community Cloud doesn't support an R runtime,
+so the R analysis can't run as part of the live app. The core volatility metric was
+reimplemented in Python for live display; the two independently-built versions were
+cross-checked against each other and returned consistent values (e.g. aluminium:
+27.8% live vs 26.8% offline), which gave some confidence the Python version is correct.*
+
+### Summary statistics (13-month sample, all commodities)
+
+| Commodity | Annualised Vol | Skewness | Kurtosis |
+|---|---|---|---|
+| Aluminium | 26.8% | -0.83 | 6.67 |
+| Crude Oil (WTI) | 52.9% | -0.78 | 7.88 |
+| Gold | 28.4% | -1.40 | 10.95 |
+| Copper | 27.0% | -0.05 | 3.77 |
+| Natural Gas | 97.5% | -3.95 | 49.45 |
+
+Industrial metals and gold clustered in a similar volatility range (27-28%), while
+energy commodities were substantially more volatile — natural gas in particular
+showed extreme fat-tailed behaviour (kurtosis ≈ 49), consistent with its known
+susceptibility to sudden supply-shock price spikes. Negative skew across most
+commodities suggests downside moves tend to be sharper than upside ones over this
+sample.
+
+### Volatility clustering: an honest finding
+
+Aluminium's rolling volatility chart shows visually distinct high- and low-volatility
+regimes, consistent with clustering. However, the ACF of squared returns did **not**
+show the textbook pattern of consecutive significant autocorrelation at short lags
+that would confirm strong clustering statistically — most early lags (1-8) fell
+within the significance bounds, with isolated significant spikes at longer, scattered
+lags (~9, ~14, ~22 days) instead.
+
+This is reported honestly rather than rounded up to "clustering confirmed": the
+regime shifts visible in the chart may be driven by a small number of discrete
+events rather than a persistent, self-reinforcing volatility process. A reasonable
+next step would be testing this more rigorously with a GARCH model rather than
+relying on the ACF alone.
+
+### Known limitation / next step
+
+The current chart displays price as a single line with news markers and a milestone
+threshold overlaid separately. Planned next iteration: rebuild as an integrated
+candlestick chart with a volume subplot and short/long moving averages, based on
+direct feedback that the current layout under-uses what the underlying OHLCV data
+can show.
+
 ## Tech stack
 
 Python · Streamlit · yfinance · Guardian Open Platform API · Anthropic API (Claude)

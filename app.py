@@ -4,7 +4,7 @@
 import streamlit as st
 from datetime import datetime
 from reference import COMMODITIES
-from prices import get_current_price, get_price_windows, get_price_history,get_secondary_market_price, DATA_CAVEAT
+from prices import get_current_price, get_price_windows, get_price_history, get_rolling_volatility, get_secondary_market_price, DATA_CAVEAT
 from news import get_articles_for_commodity
 from matching import find_fund_for_article, match_articles_to_price_dates
 from commentary import generate_commentary, generate_market_overview
@@ -128,10 +128,17 @@ if secondary:
     secondary_price = get_secondary_market_price(secondary["ticker"])
     st.caption(f"{secondary['name']}: ${secondary_price:.2f}")
 
-cols = st.columns(5)
-for col, (label, pct) in zip(cols, windows.items()):
+volatility = get_rolling_volatility(commodity_key)
+
+cols = st.columns(6)
+for col, (label, pct) in zip(cols[:5], windows.items()):
     if pct is not None:
         col.metric(label=label, value=f"{pct}%", delta=f"{pct}%")
+
+if volatility is not None:
+    cols[5].metric(label="20d volatility (ann.)", value=f"{volatility}%")
+
+st.caption("Volatility uses the same continuous futures data as prices above, so roll-date artifacts can inflate it too — see the note at the top of the page.")
 
 with st.spinner("Generating market overview..."):
     overview = generate_market_overview(commodity_key, display_name, windows, sensitivity, milestone, price)
