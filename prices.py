@@ -2,6 +2,7 @@
 # Fetches current and historical commodity prices using yfinance
 
 import os
+import numpy as np
 import yfinance as yf
 import streamlit as st
 from datetime import timedelta
@@ -79,7 +80,6 @@ def get_price_history(commodity_key):
     ticker = yf.Ticker(ticker_symbol)
     data = ticker.history(period="13mo")
     return data[["Close"]]
-import numpy as np
 
 @st.cache_data(ttl=300)
 def get_rolling_volatility(commodity_key, window=20):
