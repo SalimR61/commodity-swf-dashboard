@@ -15,6 +15,16 @@ def get_current_price(commodity_key):
     ticker_symbol = COMMODITIES[commodity_key]["ticker"]
     ticker = yf.Ticker(ticker_symbol)
     data = ticker.history(period="1d")
+
+    if data.empty:
+        # Yahoo Finance can return zero rows for "1d" outside active
+        # trading hours or during brief data gaps - fall back to a
+        # slightly longer window rather than crashing.
+        data = ticker.history(period="5d")
+
+    if data.empty:
+        raise ValueError(f"No price data returned for {commodity_key} ({ticker_symbol})")
+
     latest_price = data["Close"].iloc[-1]
     return latest_price
 
@@ -22,6 +32,13 @@ def get_current_price(commodity_key):
 def get_secondary_market_price(ticker_symbol):
     ticker = yf.Ticker(ticker_symbol)
     data = ticker.history(period="1d")
+
+    if data.empty:
+        data = ticker.history(period="5d")
+
+    if data.empty:
+        raise ValueError(f"No secondary market price data returned for {ticker_symbol}")
+
     return data["Close"].iloc[-1]
 
 # Compares the latest price to the price roughly N days ago for each
@@ -42,6 +59,10 @@ def get_price_windows(commodity_key):
     ticker_symbol = COMMODITIES[commodity_key]["ticker"]
     ticker = yf.Ticker(ticker_symbol)
     data = ticker.history(period="13mo")
+
+    if data.empty:
+        raise ValueError(f"No price history returned for {commodity_key} ({ticker_symbol})")
+
     print(f"DEBUG: {commodity_key} - rows returned: {len(data)}")
 
     latest_price = data["Close"].iloc[-1]
@@ -79,6 +100,10 @@ def get_price_history(commodity_key):
     ticker_symbol = COMMODITIES[commodity_key]["ticker"]
     ticker = yf.Ticker(ticker_symbol)
     data = ticker.history(period="13mo")
+
+    if data.empty:
+        raise ValueError(f"No price history returned for {commodity_key} ({ticker_symbol})")
+
     return data[["Close"]]
 
 @st.cache_data(ttl=300)
